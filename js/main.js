@@ -4,106 +4,63 @@ const time = document.getElementById('time'),
     name = document.getElementById('name'),
     focus = document.getElementById('focus');
 
-// Show Time
-function showTime() {
-    //let today = new Date(2020, 06, 10, 20, 33, 30),
-    let today = new Date(),
+const timeSeparator = '<span>:</span>';
+const showAmPM = true;
+
+const addZero = n => (parseInt(n, 10) < 10 ? '0' : '') + n;
+const capitalizeFirstLetter = string => string.charAt(0).toUpperCase() + string.slice(1);
+
+const hour = () => new Date().getHours();
+
+function getTimeString() {
+    const today = new Date(),
         hour = today.getHours(),
         min = today.getMinutes(),
         sec = today.getSeconds();
-    
     // Set AM or PM
     const amPm = hour >= 12 ? 'PM' : 'AM';
-
     // 12hr Format
-    hour = hour % 12  || 12;
+    const hour12 = hour % 12  || 12;
+    return `${hour12}${timeSeparator}${addZero(min)}${timeSeparator}${addZero(sec)} ${showAmPM ? amPm : ''}`;
+}
 
-    // Output Time
-    time.innerHTML = `${hour}<span>:</span>${addZero(min)}<span>:</span>${addZero(sec)} ${showAmPM ? amPm : ''}`;
+function getFromStorage(location) {
+    const store = localStorage.getItem(location);
+    return store === null ? `[Enter ${capitalizeFirstLetter(location)}]` : store;
+}
 
+const shouldSetStorage = e => e.type !== 'keypress' || (e.which === 13 || e.keyCode === 13);
+const shouldBlur = e => e.type === 'keypress' && (e.which === 13 || e.keyCode === 13);
+
+const timeOfDay = x => { if(x < 12) { return 'morning'; } if (x < 18) { return 'afternoon';} return 'evening';}
+const getGreeting = x => 'Good ' + capitalizeFirstLetter(timeOfDay(x));
+const getBackgroundImage = x => `url('../img/${x}.jpg')`;
+
+// Impure
+const setStorage = location => e => { if (shouldSetStorage(e)) { localStorage.setItem(location, e.target.innerText); } }
+const blur = obj => e => { if(shouldBlur(e)) { obj.blur(); }}
+
+function showTime() {
+    time.innerHTML = getTimeString();
     setTimeout(showTime, 1000);
 }
 
-function showAmPM() { return true; }
+const setNameStorage = setStorage('name');
+const blurName = blur(name);
+const setFocusStorage = setStorage('focus');
+const blurFocus = blur(focus);
 
-// Add Zeros
-function addZero(n) {
-    return (parseInt(n, 10) < 10 ? '0' : '') + n;
-}
+name.addEventListener('keypress', function(e) { setNameStorage(e); blurName(e); });
+name.addEventListener('blur', setNameStorage);
 
-// Set Background and Greeting
-function setBgGreet() {
-    //let today = new Date(2020, 06, 10, 20, 33, 30),
-    let today = new Date(),
-        hour = today.getHours();
-
-    if(hour < 12) {
-        // Morning
-        document.body.style.backgroundImage = "url('../img/morning.jpg')";
-        greeting.textContent = 'Good Morning';
-    } else if (hour < 18) {
-        // Afternoon
-        document.body.style.backgroundImage = "url('../img/afternoon.jpg')";
-        greeting.textContent = 'Good Afternoon';
-    } else {
-        // Evening
-        document.body.style.backgroundImage = "url('../img/evening.jpg')";
-        greeting.textContent = 'Good Evening';
-    }
-}
-
-//Get Name
-function getName() {
-    if(localStorage.getItem('name') === null) {
-        name.textContent = '[Enter Name]';
-    } else {
-        name.textContent = localStorage.getItem('name');
-    }
-}
-
-// Set Name
-function setName(e) {
-    if(e.type === 'keypress') {
-        // Make sure enter is pressed
-        if(e.which === 13 || e.keyCode === 13) {
-            localStorage.setItem('name', e.target.innerText);
-            name.blur();
-        }
-    } else {
-        localStorage.setItem('name', e.target.innerText);
-    }
-}
-
-// Get Focus
-function getFocus() {
-    if(localStorage.getItem('focus') === null) {
-        focus.textContent = '[Enter Focus]';
-    } else {
-        focus.textContent = localStorage.getItem('focus');
-    }
-}
-
-// Set Name
-function setFocus(e) {
-    if(e.type === 'keypress') {
-        // Make sure enter is pressed
-        if(e.which === 13 || e.keyCode === 13) {
-            localStorage.setItem('focus', e.target.innerText);
-            focus.blur();
-        }
-    } else {
-        localStorage.setItem('focus', e.target.innerText);
-    }
-}
-
-name.addEventListener('keypress', setName);
-name.addEventListener('blur', setName);
-
-focus.addEventListener('keypress', setFocus);
-focus.addEventListener('blur', setFocus);
+focus.addEventListener('keypress', function(e) { setFocusStorage(e); blurFocus(e); });
+focus.addEventListener('blur', setFocusStorage);
 
 // Run
 showTime();
-setBgGreet();
-getName();
-getFocus();
+
+name.textContent = getFromStorage('name');
+focus.textContent = getFromStorage('focus');
+
+document.body.style.backgroundImage = getBackgroundImage(timeOfDay(hour()));
+greeting.textContent = getGreeting(hour());

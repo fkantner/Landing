@@ -11,3 +11,4 @@ Two things I need to do:
  * Update the jpgs in the style to be presented better
  * Change to use more pure functional JS programming 
 
+I should also note that the current pics were taken from here: https://unsplash.com/s/photos/jesus 

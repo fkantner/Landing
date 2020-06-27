@@ -13,6 +13,10 @@ body {
     text-align: center;
     height: 100vh;
     color: black;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: lightsteelblue;
 }
 
 #time {
